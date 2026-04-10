@@ -117,9 +117,10 @@ async def health_records_summary_api(
     total_steps = step_result.scalar()
 
     return {
-        "average amount of sleep for 7 days": avg_sleep_hour,
-        "total amount of steps for 7 days" : total_steps
+        "avg_sleep_hours_7ds": avg_sleep_hour,
+        "total_steps_7" : total_steps
     }
+
 
 #trend, 시간 흐름에 따른 값의 변화- 날짜별 데이터 다 보여줌
 '''
