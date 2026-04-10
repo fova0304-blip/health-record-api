@@ -106,7 +106,7 @@ async def health_records_delete_api(
 async def health_records_summary_api(
    user_id:int, session=Depends(get_async_session)
 ):
-    seven_days_ago = date.today() - timedelta(7)
+    seven_days_ago = date.today() - timedelta(days=7)
     sleep_hour = select(func.avg(HealthRecord.sleep_hours)).where(HealthRecord.record_date >= seven_days_ago
                                                                   ,HealthRecord.user_id == user_id)
     sleep_result = await session.execute(sleep_hour)
@@ -121,12 +121,20 @@ async def health_records_summary_api(
         "total amount of steps for 7 days" : total_steps
     }
 
-
-    
-    
-
-
-
-
 #trend, 시간 흐름에 따른 값의 변화- 날짜별 데이터 다 보여줌
-
+'''
+[
+    {"record_date": "2026-04-05", "sleep_hours": 7.5, "steps": 8000},
+    {"record_date": "2026-04-06", "sleep_hours": 6.0, "steps": 6000},
+]
+'''
+@app.get("/trend/{user_id}")
+async def health_records_trend_api(
+    user_id:int, n:int, session = Depends(get_async_session)
+):
+    n_days_ago = date.today() - timedelta(days=n)
+    statement = select(HealthRecord.record_date, HealthRecord.sleep_hours, HealthRecord.steps).where(HealthRecord.user_id == user_id,
+        HealthRecord.record_date>=n_days_ago).order_by(HealthRecord.record_date.asc())
+    result = await session.execute(statement)
+    health_records = result.all()
+    return health_records
