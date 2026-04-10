@@ -135,6 +135,12 @@ health-record-api/
 
 ---
 
+## 데이터 출처
+
+- [Daily Habit Tracker Dataset — Kaggle](https://www.kaggle.com/datasets/prince7489/daily-habit-tracker-dataset)
+
+---
+
 ## 참고
 
 - AI는 코드 리뷰 / 에러 해석 / 설계 점검 용도로만 사용
