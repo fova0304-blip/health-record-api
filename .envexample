@@ -1,0 +1,1 @@
+DATABASE_URL =mysql+pymysql://user:pass@host:port/db #mysql 기준
