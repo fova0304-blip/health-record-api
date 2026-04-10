@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from connection import get_async_session
 from schema import HealthRecordCreateRequest, HealthRecordReplaceRequest, HealthRecordUpdateRequest,HealthRecordResponse
 from models import HealthRecord
@@ -131,7 +131,7 @@ async def health_records_summary_api(
 '''
 @app.get("/trend/{user_id}")
 async def health_records_trend_api(
-    user_id:int, n:int, session = Depends(get_async_session)
+    user_id:int, n:int=Query(default=7,ge=1), session = Depends(get_async_session)
 ):
     n_days_ago = date.today() - timedelta(days=n)
     statement = select(HealthRecord.record_date, HealthRecord.sleep_hours, HealthRecord.steps).where(HealthRecord.user_id == user_id,
