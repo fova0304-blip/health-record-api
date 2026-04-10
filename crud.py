@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from connection import get_async_session
 from schema import HealthRecordCreateRequest, HealthRecordReplaceRequest, HealthRecordUpdateRequest,HealthRecordResponse
 from models import HealthRecord
-from sqlalchemy import select 
+from sqlalchemy import select, func
+from datetime import date, timedelta
 
 app = FastAPI()
 
@@ -98,4 +99,34 @@ async def health_records_delete_api(
     await session.delete(health_records)
     await session.commit()
 
+#최근 7일을 요약한 숫자- summary
+#from datetime import date, timedelta
+#최근 7일 평균 수면 시간, 최근 7일 총 걸음 수
+@app.get("/summary/{user_id}")
+async def health_records_summary_api(
+   user_id:int, session=Depends(get_async_session)
+):
+    seven_days_ago = date.today() - timedelta(7)
+    sleep_hour = select(func.avg(HealthRecord.sleep_hours)).where(HealthRecord.record_date >= seven_days_ago
+                                                                  ,HealthRecord.user_id == user_id)
+    sleep_result = await session.execute(sleep_hour)
+    avg_sleep_hour = sleep_result.scalar()
+
+    steps = select(func.sum(HealthRecord.steps)).where(HealthRecord.record_date >= seven_days_ago,HealthRecord.user_id == user_id)
+    step_result = await session.execute(steps)
+    total_steps = step_result.scalar()
+
+    return {
+        "average amount of sleep for 7 days": avg_sleep_hour,
+        "total amount of steps for 7 days" : total_steps
+    }
+
+
+    
+    
+
+
+
+
+#trend, 시간 흐름에 따른 값의 변화- 날짜별 데이터 다 보여줌
 
