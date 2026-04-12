@@ -1,13 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query
 from connection import get_async_session
 from schema import HealthRecordCreateRequest, HealthRecordReplaceRequest, HealthRecordUpdateRequest,HealthRecordResponse
 from models import HealthRecord
 from sqlalchemy import select, func
 from datetime import date, timedelta
 
-app = FastAPI()
+router = APIRouter()
 
-@app.post("/health-records", response_model=HealthRecordResponse)
+@router.post("/health-records", response_model=HealthRecordResponse)
 async def health_records_create_api(
     body:HealthRecordCreateRequest, session = Depends(get_async_session)
 ):
@@ -35,14 +35,14 @@ async def get_health_records_or_404(session, id):
         raise HTTPException(status_code=404, detail=f"{id} not found")
     return health_records
 
-@app.get("/health-records/{id}", response_model=HealthRecordResponse)
+@router.get("/health-records/{id}", response_model=HealthRecordResponse)
 async def health_records_get_one_api(
     id:int, session = Depends(get_async_session)
 ):
     health_records = await get_health_records_or_404(session, id)
     return health_records
 
-@app.get("/health-records", response_model=list[HealthRecordResponse])
+@router.get("/health-records", response_model=list[HealthRecordResponse])
 async def health_records_get_all_api(
     user_id:int, session= Depends(get_async_session)
 ):
@@ -52,7 +52,7 @@ async def health_records_get_all_api(
     return health_records
 
 
-@app.patch("/health-records/{id}", response_model=HealthRecordResponse)
+@router.patch("/health-records/{id}", response_model=HealthRecordResponse)
 async def health_records_update_api(
     body: HealthRecordUpdateRequest, id:int, session= Depends(get_async_session)
 ):
@@ -75,7 +75,7 @@ async def health_records_update_api(
     await session.refresh(health_records)
     return health_records
 
-@app.put("/health-records/{id}", response_model=HealthRecordResponse)
+@router.put("/health-records/{id}", response_model=HealthRecordResponse)
 async def health_records_replace_api(
     body:HealthRecordReplaceRequest, id:int, session = Depends(get_async_session)
 ):
@@ -91,7 +91,7 @@ async def health_records_replace_api(
     await session.refresh(health_records)
     return health_records
 
-@app.delete("/health-records/{id}", status_code=204)
+@router.delete("/health-records/{id}", status_code=204)
 async def health_records_delete_api(
     id:int, session = Depends(get_async_session)
 ):
@@ -102,7 +102,7 @@ async def health_records_delete_api(
 #최근 7일을 요약한 숫자- summary
 #from datetime import date, timedelta
 #최근 7일 평균 수면 시간, 최근 7일 총 걸음 수
-@app.get("/summary/{user_id}")
+@router.get("/summary/{user_id}")
 async def health_records_summary_api(
    user_id:int, session=Depends(get_async_session)
 ):
@@ -129,7 +129,7 @@ async def health_records_summary_api(
     {"record_date": "2026-04-06", "sleep_hours": 6.0, "steps": 6000},
 ]
 '''
-@app.get("/trend/{user_id}")
+@router.get("/trend/{user_id}")
 async def health_records_trend_api(
     user_id:int, n:int=Query(default=7,ge=1), session = Depends(get_async_session)
 ):
