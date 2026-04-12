@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from datetime import date, time
 
 class HealthRecordCreateRequest(BaseModel):
@@ -49,3 +49,9 @@ class HealthRecordReplaceRequest(BaseModel):
     water_intake_ml:int = Field(..., ge=0)
     study_hours:float = Field(..., ge=0, le=24)
     memo:str|None = Field(default=None)
+
+class UserCreateRequest(BaseModel):
+    hashed_password: str = Field(...,min_length=4)
+    user_name: str = Field(..., min_length=2)
+    email:EmailStr = Field(...)
+    role:str = Field(default="user")

@@ -1,7 +1,18 @@
 from orm import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, Date, Time, Float, UniqueConstraint, String
+from sqlalchemy import Integer, Date, Time, Float, UniqueConstraint, String, Boolean, ForeignKey
 from datetime import date,time
+
+class User(Base):
+    __tablename__ = "users"
+
+    user_id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    hashed_password:Mapped[str] = mapped_column(String(128))
+    user_name:Mapped[str] = mapped_column(String(128),unique=True)
+    email:Mapped[str] = mapped_column(String(128), unique=True)
+    is_active:Mapped[bool] = mapped_column(Boolean, default= True)
+    role:Mapped[str] = mapped_column(String(128))
+    
 
 class HealthRecord(Base):
     __tablename__ = 'health_records'
@@ -11,7 +22,7 @@ class HealthRecord(Base):
     )
 
     id : Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), index=True)
     record_date:Mapped[date] = mapped_column(Date, index=True)
     wake_up_time :Mapped[time] = mapped_column(Time)
     sleep_hours: Mapped[float] = mapped_column(Float)
@@ -21,3 +32,4 @@ class HealthRecord(Base):
     study_hours: Mapped[float] = mapped_column(Float)
     memo:Mapped[str] = mapped_column(String(128), nullable=True)
     #mood_score: Mapped[int] = mapped_column(Integer)
+
