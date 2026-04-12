@@ -19,5 +19,5 @@ class HealthRecord(Base):
     calories_burned:Mapped[int] = mapped_column(Integer)
     water_intake_ml:Mapped[int] = mapped_column(Integer)
     study_hours: Mapped[float] = mapped_column(Float)
-    memo:Mapped[str] = mapped_column(String, nullable=True)
+    memo:Mapped[str] = mapped_column(String(128), nullable=True)
     #mood_score: Mapped[int] = mapped_column(Integer)
