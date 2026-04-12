@@ -26,7 +26,7 @@ async def create_user_api(
     await session.refresh(user)
     return user
 
-async def authentication_user(user_name, hashed_password, session):
+async def authenticate_user(user_name, hashed_password, session):
     statement = select(User).where(User.user_name == user_name) #user_name is unique 
     result = await session.execute(statement)
     user = result.scalars().first()
@@ -41,7 +41,7 @@ async def authentication_user(user_name, hashed_password, session):
 async def get_token_api(
     body: OAuth2PasswordRequestForm= Depends(), session = Depends(get_async_session)
 ):
-    user = await authentication_user(body.username, body.password, session)
+    user = await authenticate_user(body.username, body.password, session)
     if not user:
         return False
     return True
