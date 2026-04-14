@@ -55,3 +55,7 @@ class UserCreateRequest(BaseModel):
     user_name: str = Field(..., min_length=2)
     email:EmailStr = Field(...)
     role:str = Field(default="user")
+
+class Token(BaseModel):
+    access_token : str
+    token_type: str
