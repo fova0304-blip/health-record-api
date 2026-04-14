@@ -3,7 +3,7 @@ from datetime import date, time
 
 class HealthRecordCreateRequest(BaseModel):
     #id: int = Field()
-    user_id:int = Field(...)
+    #user_id:int = Field(...)
     record_date:date = Field(..., examples=["2026-01-01"])
     wake_up_time:time = Field(..., examples= ["10:00"])
     sleep_hours:float = Field(..., ge=0, le=24)
@@ -59,3 +59,11 @@ class UserCreateRequest(BaseModel):
 class Token(BaseModel):
     access_token : str
     token_type: str
+
+class Predict(BaseModel):
+    wake_up_time:time = Field(..., examples= ["10:00"])
+    sleep_hours:float = Field(..., ge=0, le=24)
+    steps:int = Field(..., ge=0)
+    calories_burned :int= Field(..., ge=0)
+    water_intake_ml:int = Field(..., ge=0)
+    study_hours:float = Field(..., ge=0, le=24)
