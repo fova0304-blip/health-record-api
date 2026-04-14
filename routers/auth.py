@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl = "/token")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl = "auth/token")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
@@ -74,5 +74,5 @@ async def get_token_api(
     user = await authenticate_user(body.username, body.password, session)
     if not user:
         return False
-    token = get_access_token(user.user_name, user.user_id, expire_time=timedelta(30))
+    token = get_access_token(user.user_name, user.user_id, expire_time=timedelta(minutes=30))
     return {"access_token": token, "token_type": "bearer"}
