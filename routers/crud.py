@@ -6,6 +6,9 @@ from sqlalchemy import select, func
 from datetime import date, timedelta
 from .auth import get_current_user
 import joblib
+from llm.llm import get_llm_response_summary, get_llm_response_trend
+
+
 router = APIRouter()
 
 model = joblib.load("./ml/DailyHabitTracker_model.joblib")
@@ -166,7 +169,9 @@ async def health_records_summary_api(
 
     return {
         "avg_sleep_hours_7ds": avg_sleep_hour,
-        "total_steps_7" : total_steps
+        "total_steps_7" : total_steps,
+        "summary_response": get_llm_response_summary({"avg_sleep_hours_7ds": avg_sleep_hour,
+                                                      "total_steps_7" : total_steps})
     }
 
 
@@ -181,5 +186,6 @@ async def health_records_trend_api(
     statement = select(HealthRecord.record_date, HealthRecord.sleep_hours, HealthRecord.steps).where(HealthRecord.user_id == current_user.user_id,
         HealthRecord.record_date>=n_days_ago).order_by(HealthRecord.record_date.asc())
     result = await session.execute(statement)
-    health_records = result.all()
-    return health_records
+    health_records = result.mappings().all() #딕셔너리로 반환해야지 json으로 해석해서 llm이 읽을수있음
+    return {"health_records":health_records,
+            "trend_response": get_llm_response_trend(str(health_records))}
