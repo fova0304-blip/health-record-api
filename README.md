@@ -1,7 +1,7 @@
 # health-record-api
 
 개인 건강 데이터를 기록하고 분석하는 REST API 서버입니다.  
-FastAPI + SQLAlchemy(Async) + MySQL 기반으로 구현하며, 단계적으로 ML inference와 LLM 요약 기능을 추가합니다.
+FastAPI + SQLAlchemy(Async) + MySQL 기반으로 구현되었으며, JWT 인증, ML 기분 예측, LLM 건강 분석 기능을 포함합니다.
 
 ---
 
@@ -15,25 +15,19 @@ FastAPI + SQLAlchemy(Async) + MySQL 기반으로 구현하며, 단계적으로 M
 | DB | MySQL |
 | DB Driver | aiomysql |
 | Validation | Pydantic v2 |
+| Auth | JWT (python-jose) + bcrypt |
+| ML | scikit-learn (RandomForestClassifier) |
+| LLM | Google Gemini API |
 
 ---
 
-## 프로젝트 로드맵
+## 주요 기능
 
-### Stage 2 — HealthRecord CRUD + 집계 API (현재)
-- HealthRecord 테이블 설계 및 CRUD 구현
-- user_id 기준 개인화 조회
-- 최근 7일 요약(summary) API
-- 최근 N일 추세(trend) API
-
-### Stage 3 — ML + LLM 연결
-- ML endpoint: 최근 N일 데이터 기반 risk score 예측
-- Ollama endpoint: summary/trend/ML 결과를 자연어로 설명
-
-### Stage 4 — 운영형 확장
-- users 테이블 + 인증(auth/login)
-- Docker, Redis, 백그라운드 태스크
-- 환경 분리, 로깅, 예외 처리 고도화
+- 회원가입 / 로그인 (JWT 인증)
+- 건강 기록 CRUD (로그인한 사용자 본인 데이터만 접근)
+- 최근 7일 요약(summary) + LLM 분석
+- 최근 N일 추세(trend) + LLM 분석
+- ML 기반 기분 예측 (good/bad)
 
 ---
 
@@ -44,57 +38,74 @@ FastAPI + SQLAlchemy(Async) + MySQL 기반으로 구현하며, 단계적으로 M
 pip install -r requirements.txt
 ```
 
-### 2. DB 설정
-`connection.py`의 `DATABASE_URL`을 본인 MySQL 환경에 맞게 수정합니다.
+### 2. 환경변수 설정
+`.env` 파일 생성 후 아래 내용 입력:
 
-```python
-DATABASE_URL = "mysql+aiomysql://<user>:<password>@<host>:<port>/<dbname>"
+```
+DATABASE_URL=mysql+aiomysql://<user>:<password>@<host>:<port>/<dbname>
+SECRET_KEY=<your_secret_key>
+ALGORITHM=HS256
+GEMINI_API_KEY=<your_gemini_api_key>
 ```
 
-### 3. 테이블 생성
+### 3. 서버 실행
 ```bash
-python orm.py
-```
-
-### 4. 서버 실행
-```bash
-uvicorn crud:app --reload
+fastapi dev main.py
 ```
 
 Swagger UI: `http://127.0.0.1:8000/docs`
 
 ---
 
-## API 명세 (Stage 2)
+## API 명세
+
+### Auth
+
+| Method | URL | 설명 |
+|---|---|---|
+| POST | `/auth` | 회원가입 |
+| POST | `/token` | 로그인 (JWT 발급) |
 
 ### HealthRecord CRUD
 
 | Method | URL | 설명 |
 |---|---|---|
 | POST | `/health-records` | 건강 기록 생성 |
-| GET | `/health-records` | 전체 기록 조회 (user_id 필터) |
+| GET | `/health-records` | 전체 기록 조회 |
 | GET | `/health-records/{id}` | 단건 조회 |
 | PATCH | `/health-records/{id}` | 부분 수정 |
 | PUT | `/health-records/{id}` | 전체 교체 |
 | DELETE | `/health-records/{id}` | 삭제 |
 
-### 집계 API (구현 예정)
+### 분석 API
 
 | Method | URL | 설명 |
 |---|---|---|
-| GET | `/health-records/summary` | 최근 7일 평균 수면 / 총 운동량 |
-| GET | `/health-records/trend` | 최근 N일 sleep / study 추세 |
+| GET | `/summary` | 최근 7일 평균 수면 / 총 걸음 수 + LLM 분석 |
+| GET | `/trend` | 최근 N일 날짜별 수면 / 걸음 추세 + LLM 분석 |
+| POST | `/predict` | 특정 날짜 건강 기록 기반 기분 예측 (good/bad) |
 
 ---
 
 ## 데이터 모델
+
+### User
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| user_id | int | PK |
+| user_name | str | 유저명 (unique) |
+| email | str | 이메일 (unique) |
+| hashed_password | str | bcrypt 해시 비밀번호 |
+| is_active | bool | 활성 여부 |
+| role | str | 역할 |
 
 ### HealthRecord
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | id | int | PK |
-| user_id | int | 사용자 식별자 (로그인 없이 ID로 구분) |
+| user_id | int | FK (users.user_id) |
 | record_date | date | 기록 날짜 (user_id + date 유니크) |
 | wake_up_time | time | 기상 시각 |
 | sleep_hours | float | 수면 시간 (0~24) |
@@ -106,29 +117,23 @@ Swagger UI: `http://127.0.0.1:8000/docs`
 
 ---
 
-## 검증 항목 (Swagger / Postman 기준)
-
-- [ ] POST → 201 정상 생성
-- [ ] POST 중복 날짜 → 500 (IntegrityError 처리 예정)
-- [ ] GET /{id} 존재 → 200
-- [ ] GET /{id} 없음 → 404
-- [ ] GET ?user_id= → 목록 반환
-- [ ] PATCH → 변경 필드만 수정
-- [ ] PUT → 전체 교체
-- [ ] DELETE → 204
-- [ ] 잘못된 타입 요청 → 422
-
----
-
 ## 디렉토리 구조
 
 ```
-health-record-api/
-├── crud.py          # FastAPI 앱 + 라우터 (main.py로 이동 예정)
+health-track-api/
+├── main.py          # FastAPI 앱 진입점
 ├── models.py        # SQLAlchemy ORM 모델
 ├── schema.py        # Pydantic 요청/응답 스키마
-├── orm.py           # Base 및 테이블 생성
-├── connection.py    # DB 연결 설정
+├── orm.py           # DeclarativeBase
+├── connection.py    # DB 연결 및 세션
+├── routers/
+│   ├── auth.py      # 회원가입 / 로그인
+│   └── crud.py      # HealthRecord CRUD + 분석 API
+├── ml/
+│   ├── DailyHabitTracker_model.joblib  # 학습된 ML 모델
+│   └── health_track_api.ipynb          # 모델 학습 노트북
+├── llm/
+│   └── llm.py       # Gemini API 연동
 ├── requirements.txt
 └── README.md
 ```
@@ -143,6 +148,6 @@ health-record-api/
 
 ## 참고
 
-- AI는 코드 리뷰 / 에러 해석 / 설계 점검 용도로만 사용
-- 구현은 직접 작성 후 Swagger로 실행 검증 필수
-- Stage 2 완료 기준: CRUD 6개 + summary + trend 모두 Swagger에서 동작 확인
+- ML 모델: RandomForestClassifier, accuracy 0.88 (binary classification: good/bad mood)
+- LLM: Google Gemini 2.0 Flash
+- 인증이 필요한 모든 엔드포인트는 Bearer 토큰 필요
