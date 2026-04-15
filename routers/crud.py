@@ -6,10 +6,9 @@ from sqlalchemy import select, func
 from datetime import date, timedelta
 from .auth import get_current_user
 import joblib
-
 router = APIRouter()
 
-model = joblib.load("DailyHabitTracker_model.joblib")
+model = joblib.load("./ml/DailyHabitTracker_model.joblib")
 
 def predict_mood(body: Predict):
     data=[
