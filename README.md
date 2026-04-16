@@ -149,5 +149,5 @@ health-track-api/
 ## 참고
 
 - ML 모델: RandomForestClassifier, accuracy 0.88 (binary classification: good/bad mood)
-- LLM: Google Gemini 2.0 Flash
+- LLM: Google Gemini 2.5 Flash
 - 인증이 필요한 모든 엔드포인트는 Bearer 토큰 필요
