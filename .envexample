@@ -1,1 +1,4 @@
-DATABASE_URL =mysql+pymysql://user:pass@host:port/db #mysql 기준
+DATABASE_URL=mysql+aiomysql://<user>:<password>@<host>:<port>/<dbname>
+SECRET_KEY=<your_secret_key>
+ALGORITHM=HS256
+GEMINI_API_KEY=<your_gemini_api_key>

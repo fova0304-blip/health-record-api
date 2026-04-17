@@ -14,7 +14,7 @@ class HealthRecordCreateRequest(BaseModel):
     memo:str|None = Field(default=None)
 
 class HealthRecordResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) #sqlalchemy orm 객체를 pydantic으로 변환해서 읽음
     id: int 
     user_id:int 
     record_date:date 
