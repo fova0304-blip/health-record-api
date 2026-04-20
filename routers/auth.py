@@ -49,8 +49,8 @@ async def authenticate_user(user_name, hashed_password, session):
         return False
     return user
 
-def get_access_token(user_name:str, user_id:int, expire_time:timedelta):
-    encode = {"user_name": user_name, "user_id" : user_id, "exp": datetime.now(timezone.utc)+expire_time}
+def get_access_token(user_name:str, user_id:int, role:str ,expire_time:timedelta):
+    encode = {"user_name": user_name, "user_id" : user_id, "role": role, "exp": datetime.now(timezone.utc)+expire_time}
     return jwt.encode(encode,SECRET_KEY,algorithm=ALGORITHM)
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], session:AsyncSession=Depends(get_async_session)):
@@ -58,6 +58,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], sessio
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_name:str = payload.get("user_name")
         user_id:int = payload.get("user_id")
+        role:str = payload.get("role")
         if user_name is None or user_id is None:
             raise HTTPException(status_code=401, detail="can not find the user")
         statement = select(User).where(User.user_id == user_id)
@@ -74,5 +75,5 @@ async def get_token_api(
     user = await authenticate_user(body.username, body.password, session)
     if not user:
         return False
-    token = get_access_token(user.user_name, user.user_id, expire_time=timedelta(minutes=30))
+    token = get_access_token(user.user_name, user.user_id, user.role, expire_time=timedelta(minutes=30))
     return {"access_token": token, "token_type": "bearer"}

@@ -67,3 +67,12 @@ class Predict(BaseModel):
     calories_burned :int= Field(..., ge=0)
     water_intake_ml:int = Field(..., ge=0)
     study_hours:float = Field(..., ge=0, le=24)
+
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True) #sqlalchemy orm 객체를 pydantic으로 변환해서 읽음
+    user_id:int 
+    user_name: str 
+    email:str 
+    role:str 
+    is_active: bool
+
