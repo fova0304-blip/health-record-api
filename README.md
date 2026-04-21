@@ -64,7 +64,14 @@ Swagger UI: `http://127.0.0.1:8000/docs`
 | Method | URL | 설명 |
 |---|---|---|
 | POST | `/auth` | 회원가입 |
-| POST | `/token` | 로그인 (JWT 발급) |
+| POST | `/auth/token` | 로그인 (JWT 발급) |
+
+### Admin (role: admin 전용)
+
+| Method | URL | 설명 |
+|---|---|---|
+| GET | `/admin/admin/` | 전체 유저 조회 |
+| DELETE | `/admin/admin/delete/{user_id}` | 유저 삭제 |
 
 ### HealthRecord CRUD
 
@@ -128,7 +135,8 @@ health-track-api/
 ├── connection.py    # DB 연결 및 세션
 ├── routers/
 │   ├── auth.py      # 회원가입 / 로그인
-│   └── crud.py      # HealthRecord CRUD + 분석 API
+│   ├── crud.py      # HealthRecord CRUD + 분석 API
+│   └── admin.py     # 관리자 전용 (유저 조회 / 삭제)
 ├── ml/
 │   ├── DailyHabitTracker_model.joblib  # 학습된 ML 모델
 │   └── health_track_api.ipynb          # 모델 학습 노트북
