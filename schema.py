@@ -76,3 +76,7 @@ class UserResponse(BaseModel):
     role:str 
     is_active: bool
 
+class UserPasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6)
+
