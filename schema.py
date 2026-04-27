@@ -55,6 +55,7 @@ class UserCreateRequest(BaseModel):
     user_name: str = Field(..., min_length=2)
     email:EmailStr = Field(...)
     role:str = Field(default="user")
+    phone_number:str | None = Field(default="+1(111)-111-1111")
 
 class Token(BaseModel):
     access_token : str
@@ -75,6 +76,7 @@ class UserResponse(BaseModel):
     email:str 
     role:str 
     is_active: bool
+    phone_number: str | None
 
 class UserPasswordRequest(BaseModel):
     current_password: str

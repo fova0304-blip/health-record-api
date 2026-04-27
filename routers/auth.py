@@ -32,7 +32,8 @@ async def create_user_api(
         user_name = body.user_name,
         email = body.email,
         role = body.role,
-        is_active = True
+        is_active = True,
+        phone_number = body.phone_number
     )
     session.add(user)
     await session.commit()

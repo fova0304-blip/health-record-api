@@ -5,6 +5,7 @@ from .auth import get_current_user
 from models import User
 from sqlalchemy import select
 from schema import UserPasswordRequest
+from schema import UserResponse
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
 
@@ -13,7 +14,7 @@ router = APIRouter(
     tags = ["user"]
 )
 
-@router.get("/")
+@router.get("/", response_model=UserResponse)
 async def get_user_info_api(
     session = Depends(get_async_session),
     user = Depends(get_current_user)
@@ -39,10 +40,27 @@ async def change_user_password_api(
     user_info = result.scalars().first()
 
     if not bcrypt_context.verify(body.current_password, user_info.hashed_password):
-        return "Password Not Match"
+        raise HTTPException(status_code=401, detail="Password Not Match")
     user_info.hashed_password = bcrypt_context.hash(body.new_password)
     await session.commit()
     await session.refresh(user_info)
     return "Password Updated"
     
+@router.put("/change-phone-number")
+async def change_phone_number_api(
+    phone_number:str,
+    session = Depends(get_async_session),
+    user = Depends(get_current_user)
+):
+    if not user:
+        raise HTTPException(status_code=401, detail="user not found")
+    
+    statement = select(User).where(User.user_id == user.user_id)
+    result = await session.execute(statement)
+    user_info = result.scalars().first()
+
+    user_info.phone_number = phone_number
+    await session.commit()
+    await session.refresh(user_info)
+    return "Phone Number Updated"
 

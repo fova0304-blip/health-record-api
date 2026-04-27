@@ -12,6 +12,7 @@ class User(Base):
     email:Mapped[str] = mapped_column(String(128), unique=True)
     is_active:Mapped[bool] = mapped_column(Boolean, default= True)
     role:Mapped[str] = mapped_column(String(128))
+    phone_number:Mapped[str|None] = mapped_column(String(128), nullable=True)
     
 
 class HealthRecord(Base):
